@@ -1,0 +1,123 @@
+<html>
+<head>
+	
+	<title></title>
+	
+	<script type="text/javascript" src="dist/jquery.min.js"></script>
+	<script type="text/javascript" src="dist/jquery.jqplot.min.js"></script>
+	
+	<style type="text/css" >
+		label{
+			display:block;
+			font-weight:bold;
+			text-align:right;
+			width:140px;
+			float:left;
+			clear: left;
+		}
+		.small{
+			color:#666666;
+			display:block;
+			font-size:11px;
+			font-weight:normal;
+			text-align:right;
+			width:140px;
+		}
+		input{
+			float:left;
+			font-size:12px;
+			padding:4px 2px;
+			border:solid 1px #aacfe4;
+			width:200px;
+			margin:2px 0 20px 10px;
+		}
+		td{
+			border: 'black';
+			padding-right: 1em;
+		}
+	</style>
+	
+	<script type="text/javascript" >
+		function calculate() {
+			var property_value = $('#property_value').val()
+			var deposit = $('#deposit').val()
+			var property_growth = $('#property_growth').val()
+			var loan_term = $('#loan_term').val()
+			var rent = $('#rent').val()
+			var investment_interest = $('#investment_interest').val()
+			
+			var installment = (property_value - deposit)*0.01
+			var investment_contribution = installment - rent
+			
+			var investment = new Array()
+			var property = new Array()
+			investment.push(deposit)
+			property.push(property_value)
+			for (var year = 1; year < loan_term; ++year)
+			{
+				for (var month = 0; month < 12; ++month)
+				{
+					investment.push((1.0 + investment_interest/100.0/12.0)*investment[investment.length-1] + investment_contribution)
+					property.push( (1.0 + property_growth/100.0/12.0)*property[property.length-1] )
+				}
+				
+				// increase rent
+				rent = 1.06*rent
+				investment_contribution = installment - rent
+			}
+			
+			$('#chart1').empty()
+			var xtics = loan_term
+			++xtics			
+			$.jqplot ('chart1', [investment, property], 
+			{
+				axes: {
+        			xaxis: {
+            			min: 0,
+            			max: 12*loan_term,
+            			numberTicks: xtics,
+        			}
+				}
+			});
+			
+			/*
+			$('#result').empty()
+			$('#result').append('<table>')
+			for (var i = 0; i < 12*loan_term; ++i)
+			{
+				$('#result').append('<tr><td>' + i + '</td><td>' + investment[i] + '</td></tr>')
+			}
+			$('#result').append('</table>')
+			//*/
+		}
+	</script>
+	
+
+</head>
+
+<body>
+	<div>
+	<form>	
+		<label>Property value</label> <input type="text" id="property_value"/>
+		
+		<label>Deposit</label> <input type="text" id="deposit"/>
+		
+		<label>Property growth</label> <input type="text" id="property_growth"/>
+		
+		<label>Loan term
+		<span class="small">In years</span></label> <input  type="text" id="loan_term"/>
+		
+		<label>Rent</label> <input type="text" id="rent" name="rent" />
+		
+		<label>Investment interest</label> <input type="text" id="investment_interest"/>
+		
+		<input type="submit" value="calculate" onClick="calculate(); return false">
+	</form>
+	</div>
+	<br/>
+	<div id="chart1" style="clear:both"></div>
+	<br/>
+	<div id="result" style="clear:both">
+	</div>
+</body>
+</html>
